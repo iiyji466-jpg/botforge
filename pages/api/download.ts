@@ -1,11 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // التأكد من أن الطلب POST
   if (req.method !== 'POST') return res.status(405).json({ error: 'الطريقة غير مسموحة' });
 
-  const { url, quality } = req.body; // نستقبل الرابط والجودة المطلوبة
-
+  const { url } = req.body;
   if (!url) return res.status(400).json({ error: 'الرابط مطلوب' });
 
   try {
@@ -17,28 +15,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       body: JSON.stringify({
         url: url,
-        videoQuality: quality || "720", // جودة تلقائية 720
-        filenamePattern: "pretty",      // اسم ملف مرتب
-        isAudioOnly: false,             // إذا كنت تريد تحميل صوت فقط غيرها لـ true
-        disableMetadata: false          // جلب معلومات الفيديو (العنوان، الغلاف)
+        videoQuality: "720",
       })
     });
 
     const data = await response.json();
 
-    if (data.status === 'error') {
-      throw new Error(data.text);
+    // التحقق من وجود رابط مباشر أو قائمة اختيار (Picker)
+    const directUrl = data.url || (data.picker && data.picker[0]?.url);
+
+    if (directUrl) {
+      return res.status(200).json({
+        success: true,
+        downloadUrl: directUrl
+      });
+    } else {
+      return res.status(400).json({ error: 'لم أتمكن من العثور على رابط مباشر' });
     }
 
-    // إرجاع النتيجة النهائية (رابط التحميل المباشر)
-    return res.status(200).json({
-      success: true,
-      downloadUrl: data.url,
-      title: data.pickerItem?.[0]?.text || "Video"
-    });
-
-  } catch (error: any) {
-    console.error('Download Error:', error);
-    return res.status(500).json({ error: 'فشل المحرك في استخراج الفيديو، تأكد من الرابط.' });
+  } catch (error) {
+    return res.status(500).json({ error: 'المحرك لا يستجيب، حاول مجدداً' });
   }
 }
