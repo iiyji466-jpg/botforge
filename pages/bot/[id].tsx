@@ -3,7 +3,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
 import { BOTS, Bot } from '../../lib/bots'
-import toast from 'react-hot-toast'
+import toast, { Toaster } from 'react-hot-toast'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -28,19 +28,39 @@ export default function BotPage({ bot }: { bot: Bot }) {
     setMessages(newMessages)
     setInput('')
     setLoading(true)
+
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, systemPrompt: bot.systemPrompt }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'خطأ')
-      setMessages([...newMessages, { role: 'assistant', content: data.reply }])
-    } catch {
-      toast.error('حدث خطأ. حاول مجدداً.')
-      setMessages(newMessages.slice(0, -1))
-      setInput(content)
+      // التحقق: إذا كان البوت هو "صياد المقاطع"، نتوجه لمحرك التحميل الجديد
+      if (bot.id === 'downloader') {
+        const response = await fetch('/api/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: content }),
+        })
+        const data = await response.json()
+        
+        if (data.success) {
+          setMessages([...newMessages, { 
+            role: 'assistant', 
+            content: `✅ تم استخراج الرابط بنجاح!\n\n🔗 [اضغط هنا لتحميل الفيديو مباشرة](${data.downloadUrl})` 
+          }])
+        } else {
+          throw new Error(data.error || 'فشل في استخراج الرابط')
+        }
+      } else {
+        // لبقية البوتات، نستخدم الدردشة العادية
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: newMessages, systemPrompt: bot.systemPrompt }),
+        })
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.error || 'خطأ في الاتصال')
+        setMessages([...newMessages, { role: 'assistant', content: data.reply || data.choices?.[0]?.message?.content }])
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'حدث خطأ غير متوقع')
+      setMessages(newMessages)
     } finally {
       setLoading(false)
     }
@@ -58,6 +78,7 @@ export default function BotPage({ bot }: { bot: Bot }) {
       <Head>
         <title>{bot.nameAr} — BotForge</title>
       </Head>
+      <Toaster />
       <div className="min-h-screen flex flex-col" dir="rtl" style={{ background: '#0a0a0f' }}>
         <header className="border-b sticky top-0 z-50 backdrop-blur-xl" style={{ borderColor: `${bot.color}20`, background: `${bot.color}05` }}>
           <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -184,4 +205,4 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const bot = BOTS.find((b) => b.id === params?.id)
   if (!bot) return { notFound: true }
   return { props: { bot } }
-      }
+}
