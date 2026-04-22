@@ -31,7 +31,6 @@ export default function BotPage({ bot }: { bot: Bot }) {
 
     try {
       const endpoint = bot.id === 'downloader' ? '/api/download' : '/api/chat'
-      
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -48,14 +47,15 @@ export default function BotPage({ bot }: { bot: Bot }) {
       if (bot.id === 'downloader') {
         setMessages([...newMessages, { 
           role: 'assistant', 
-          content: `✅ تم استخراج الرابط بنجاح!\n\n🔗 [اضغط هنا لتحميل الفيديو مباشرة](${data.downloadUrl})` 
+          content: `✅ تم استخراج الرابط!\n\n🔗 [اضغط هنا للتحميل](${data.downloadUrl})` 
         }])
       } else {
-        const replyText = data.reply || data.choices?.[0]?.message?.content || "عذراً، لم أتمكن من معالجة الرد."
+        // الحل الجذري للصمت: قراءة كل احتمالات الرد من OpenRouter
+        const replyText = data.reply || data.choices?.[0]?.message?.content || "عذراً، لم أتلقى رداً."
         setMessages([...newMessages, { role: 'assistant', content: replyText }])
       }
     } catch (err: any) {
-      toast.error(err.message || 'حدث خطأ غير متوقع')
+      toast.error(err.message || 'حدث خطأ')
     } finally {
       setLoading(false)
     }
@@ -70,60 +70,29 @@ export default function BotPage({ bot }: { bot: Bot }) {
 
   return (
     <>
-      <Head>
-        <title>{bot.nameAr} — BotForge</title>
-      </Head>
+      <Head><title>{bot.nameAr}</title></Head>
       <Toaster />
-      <div className="min-h-screen flex flex-col font-sans" dir="rtl" style={{ background: '#0a0a0f' }}>
-        <header className="border-b sticky top-0 z-50 backdrop-blur-xl border-white/10" style={{ background: `${bot.color}05` }}>
-          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between text-white">
-            <div className="flex items-center gap-3">
-              <Link href="/" className="text-[#6b6b8a] hover:text-white text-sm">← رجوع</Link>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg" style={{ background: `${bot.color}15` }}>{bot.icon}</div>
-              <h1 className="font-semibold text-sm">{bot.nameAr}</h1>
-            </div>
-          </div>
+      <div className="min-h-screen flex flex-col text-white" dir="rtl" style={{ background: '#0a0a0f' }}>
+        <header className="p-4 border-b border-white/10 flex justify-between items-center">
+          <Link href="/" className="text-sm opacity-50">← رجوع</Link>
+          <h1 className="text-sm font-bold">{bot.nameAr}</h1>
+          <div className="w-8"></div>
         </header>
-
-        <div className="flex-1 overflow-y-auto max-w-4xl mx-auto w-full px-4 py-6 text-white">
-          {messages.length === 0 ? (
-            <div className="text-center py-20 opacity-60">
-              <div className="text-5xl mb-4">{bot.icon}</div>
-              <h2 className="text-xl font-bold">{bot.nameAr}</h2>
-              <p className="text-sm mt-2">{bot.descriptionAr}</p>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`p-3 rounded-2xl max-w-[80%] text-sm ${msg.role === 'user' ? 'bg-blue-600' : 'bg-white/10'}`}>
+                {msg.content}
+              </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((msg, i) => (
-                <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-blue-600' : 'bg-white/10'}`}>
-                    {msg.content}
-                  </div>
-                </div>
-              ))}
-              {loading && <div className="text-xs opacity-50 animate-pulse mt-2">جاري المعالجة...</div>}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
+          ))}
+          {loading && <div className="text-xs opacity-50 animate-pulse">جاري التفكير...</div>}
+          <div ref={messagesEndRef} />
         </div>
-
-        <footer className="p-4 bg-[#0a0a0f] border-t border-white/10 sticky bottom-0">
-          <div className="max-w-4xl mx-auto flex gap-3 bg-white/5 p-2 rounded-2xl border border-white/10">
-            <textarea
-              className="flex-1 bg-transparent p-2 outline-none text-white text-sm resize-none"
-              rows={1}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={bot.placeholder}
-            />
-            <button 
-              onClick={() => sendMessage()}
-              disabled={loading || !input.trim()}
-              className="px-4 py-2 rounded-xl bg-blue-600 disabled:opacity-30 transition-all text-white"
-            >
-              إرسال
-            </button>
+        <footer className="p-4 border-t border-white/10">
+          <div className="flex gap-2 bg-white/5 p-2 rounded-xl">
+            <textarea className="flex-1 bg-transparent outline-none text-sm resize-none" rows={1} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="اكتب هنا..." />
+            <button onClick={() => sendMessage()} className="bg-blue-600 px-4 py-1 rounded-lg text-sm">إرسال</button>
           </div>
         </footer>
       </div>
