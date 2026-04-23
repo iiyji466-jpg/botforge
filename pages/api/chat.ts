@@ -30,14 +30,11 @@ export default async function handler(
     )
 
     const data = await response.json()
-    
-    // ✅ أضف هذا السطر للتشخيص
-    console.log('Gemini Response:', JSON.stringify(data).substring(0, 200))
-    
+
     if (!response.ok) {
       console.error('Gemini API Error:', data)
-      return res.status(response.status).json({ 
-        error: data.error?.message || 'خطأ في الاتصال بـ Gemini' 
+      return res.status(response.status).json({
+        error: data.error?.message || 'خطأ في الاتصال بـ Gemini'
       })
     }
 
