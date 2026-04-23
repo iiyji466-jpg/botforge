@@ -1,25 +1,10 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-const extractUrl = (text: string) => {
-  const urlRegex = /(https?:\/\/[^\s]+)/g
-  const result = text.match(urlRegex)
-  return result ? result[0] : null
-}
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'الطريقة غير مسموحة' })
-  }
-
-  const { url: rawInput } = req.body
-  const url = extractUrl(rawInput)
-
-  if (!url) {
-    return res.status(400).json({ error: 'لم يتم العثور على رابط' })
-  }
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: 'يرجى وضع رابط صالح' });
 
   try {
     const response = await fetch("https://api.cobalt.tools/api/json", {
@@ -28,18 +13,24 @@ export default async function handler(
         "Content-Type": "application/json",
         "Accept": "application/json",
       },
-      body: JSON.stringify({ url, videoQuality: "720" })
-    })
+      body: JSON.stringify({
+        url: url,
+        videoQuality: "720",
+        filenameStyle: "pretty"
+      })
+    });
 
-    const data = await response.json()
-    const directUrl = data.url || (data.picker && data.picker[0]?.url)
+    const data = await response.json();
+    
+    // كوبالت قد يعيد الرابط في data.url أو data.picker
+    const downloadUrl = data.url || (data.picker && data.picker[0]?.url);
 
-    if (directUrl) {
-      return res.status(200).json({ success: true, downloadUrl: directUrl })
+    if (downloadUrl) {
+      return res.status(200).json({ success: true, downloadUrl });
     } else {
-      return res.status(400).json({ error: 'الرابط غير مدعوم' })
+      return res.status(400).json({ error: 'تعذر استخراج الرابط، جرب رابطاً آخر' });
     }
   } catch (error) {
-    return res.status(500).json({ error: 'المحرك مشغول' })
+    return res.status(500).json({ error: 'المحرك مشغول حالياً، حاول لاحقاً' });
   }
 }
