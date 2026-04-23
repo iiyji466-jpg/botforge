@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Muhannad AI — منصة البوتات الذكية</title>
+        <title>Mohannad AI — منصة البوتات الذكية</title>
         <meta name="description" content="7 بوتات ذكية لجميع احتياجاتك" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
@@ -20,7 +20,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <span className="text-3xl">🤖</span>
               <div>
-                <h1 className="font-mono text-xl font-bold neon-text">Muhannad AI</h1>
+                <h1 className="font-mono text-xl font-bold neon-text">Mohannad AI</h1>
                 <p className="text-xs text-[#6b6b8a]">منصة البوتات الذكية</p>
               </div>
             </div>
@@ -111,7 +111,7 @@ export default function Home() {
         </section>
 
         <footer className="border-t border-[#1e1e2e] py-8 text-center text-[#6b6b8a] text-sm">
-          <p>Muhannad AI — مبني بـ Next.js + Gemini AI</p>
+          <p>Mohannad AI — مبني بـ Next.js + Gemini AI</p>
         </footer>
       </div>
     </>
