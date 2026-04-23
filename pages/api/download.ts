@@ -1,3 +1,5 @@
+import type { NextApiRequest, NextApiResponse } from 'next'
+
 // دالة لاستخراج الرابط فقط من وسط النص
 const extractUrl = (text: string) => {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -6,12 +8,16 @@ const extractUrl = (text: string) => {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'الطريقة غير مسموحة' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'الطريقة غير مسموحة' });
+  }
 
   const { url: rawInput } = req.body;
-  const url = extractUrl(rawInput); // هنا نقوم بتنظيف الرابط من الكلام الزائد
+  const url = extractUrl(rawInput); // استخراج الرابط من النص
 
-  if (!url) return res.status(400).json({ error: 'لم يتم العثور على رابط صالح في النص' });
+  if (!url) {
+    return res.status(400).json({ error: 'لم يتم العثور على رابط صالح في النص' });
+  }
 
   try {
     const response = await fetch("https://api.cobalt.tools/api/json", {
@@ -30,11 +36,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const directUrl = data.url || (data.picker && data.picker[0]?.url);
 
     if (directUrl) {
-      return res.status(200).json({ success: true, downloadUrl: directUrl });
+      return res.status(200).json({ 
+        success: true, 
+        downloadUrl: directUrl 
+      });
     } else {
-      return res.status(400).json({ error: 'عذراً، هذا الرابط غير مدعوم حالياً' });
+      return res.status(400).json({ 
+        error: 'عذراً، هذا الرابط غير مدعوم حالياً' 
+      });
     }
   } catch (error) {
-    return res.status(500).json({ error: 'المحرك مشغول، حاول مرة أخرى' });
+    console.error('Download API Error:', error);
+    return res.status(500).json({ 
+      error: 'المحرك مشغول، حاول مرة أخرى' 
+    });
   }
 }
