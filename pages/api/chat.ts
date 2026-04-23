@@ -32,15 +32,13 @@ export default async function handler(
     const data = await response.json()
 
     if (!response.ok) {
-      console.error('Gemini API Error:', data)
-      return res.status(response.status).json({
-        error: data.error?.message || 'خطأ في الاتصال بـ Gemini'
+      return res.status(response.status).json({ 
+        error: data.error?.message || 'خطأ في الاتصال بـ Gemini' 
       })
     }
 
     return res.status(200).json(data)
   } catch (error) {
-    console.error('Chat error:', error)
     return res.status(500).json({ error: 'حدث خطأ في المعالجة' })
   }
 }
