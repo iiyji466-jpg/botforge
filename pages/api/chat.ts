@@ -11,7 +11,6 @@ export default async function handler(
   try {
     const { messages, systemPrompt } = req.body
 
-    // استخدام Google Gemini API المجاني
     const response = await fetch(
       "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
       {
@@ -21,7 +20,7 @@ export default async function handler(
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "gemini-2.0-flash-exp", // نموذج مجاني وسريع
+          model: "gemini-2.0-flash-exp",
           messages: [
             { role: "system", content: systemPrompt },
             ...messages
@@ -31,6 +30,9 @@ export default async function handler(
     )
 
     const data = await response.json()
+    
+    // ✅ أضف هذا السطر للتشخيص
+    console.log('Gemini Response:', JSON.stringify(data).substring(0, 200))
     
     if (!response.ok) {
       console.error('Gemini API Error:', data)
