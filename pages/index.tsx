@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>BotForge — منصة البوتات الذكية</title>
+        <title>Muhannad AI — منصة البوتات الذكية</title>
         <meta name="description" content="7 بوتات ذكية لجميع احتياجاتك" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
@@ -20,7 +20,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <span className="text-3xl">🤖</span>
               <div>
-                <h1 className="font-mono text-xl font-bold neon-text">BotForge</h1>
+                <h1 className="font-mono text-xl font-bold neon-text">Muhannad AI</h1>
                 <p className="text-xs text-[#6b6b8a]">منصة البوتات الذكية</p>
               </div>
             </div>
@@ -33,7 +33,7 @@ export default function Home() {
 
         <section className="max-w-7xl mx-auto px-4 py-16 text-center">
           <div className="inline-block mb-6 px-4 py-1 rounded-full border border-[#00ff87]/30 text-[#00ff87] text-sm bg-[#00ff87]/5">
-            ⚡ مدعوم بالذكاء الاصطناعي Claude
+            ⚡ مدعوم بالذكاء الاصطناعي Gemini
           </div>
           <h2 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             بوتاتك الذكية
@@ -111,9 +111,9 @@ export default function Home() {
         </section>
 
         <footer className="border-t border-[#1e1e2e] py-8 text-center text-[#6b6b8a] text-sm">
-          <p>BotForge — مبني بـ Next.js + Claude AI</p>
+          <p>Muhannad AI — مبني بـ Next.js + Gemini AI</p>
         </footer>
       </div>
     </>
   )
-            }
+}
