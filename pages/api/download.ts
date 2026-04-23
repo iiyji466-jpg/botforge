@@ -18,7 +18,7 @@ export default async function handler(
   const url = extractUrl(rawInput)
 
   if (!url) {
-    return res.status(400).json({ error: 'لم يتم العثور على رابط صالح في النص' })
+    return res.status(400).json({ error: 'لم يتم العثور على رابط' })
   }
 
   try {
@@ -28,29 +28,18 @@ export default async function handler(
         "Content-Type": "application/json",
         "Accept": "application/json",
       },
-      body: JSON.stringify({
-        url: url,
-        videoQuality: "720",
-      })
+      body: JSON.stringify({ url, videoQuality: "720" })
     })
 
     const data = await response.json()
     const directUrl = data.url || (data.picker && data.picker[0]?.url)
 
     if (directUrl) {
-      return res.status(200).json({
-        success: true,
-        downloadUrl: directUrl
-      })
+      return res.status(200).json({ success: true, downloadUrl: directUrl })
     } else {
-      return res.status(400).json({
-        error: 'عذراً، هذا الرابط غير مدعوم حالياً'
-      })
+      return res.status(400).json({ error: 'الرابط غير مدعوم' })
     }
   } catch (error) {
-    console.error('Download error:', error)
-    return res.status(500).json({
-      error: 'المحرك مشغول، حاول مرة أخرى'
-    })
+    return res.status(500).json({ error: 'المحرك مشغول' })
   }
 }
