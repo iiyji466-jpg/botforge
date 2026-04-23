@@ -1,4 +1,4 @@
-limport { GetStaticPaths, GetStaticProps } from 'next'
+import { GetStaticPaths, GetStaticProps } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
@@ -54,7 +54,6 @@ export default function BotPage({ bot }: { bot: Bot }) {
           content: `✅ تم استخراج الرابط!\n\n🔗 [اضغط هنا للتحميل](${data.downloadUrl})` 
         }])
       } else {
-        // استخراج الرد من Gemini
         const replyText = data.choices?.[0]?.message?.content || "عذراً، لم أتلقى رداً."
         setMessages([...newMessages, { role: 'assistant', content: replyText }])
       }
