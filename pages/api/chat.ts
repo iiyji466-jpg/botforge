@@ -1,54 +1,37 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-// دالة لاستخراج الرابط فقط من وسط النص
-const extractUrl = (text: string) => {
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const result = text.match(urlRegex);
-  return result ? result[0] : null;
-};
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'الطريقة غير مسموحة' });
-  }
-
-  const { url: rawInput } = req.body;
-  const url = extractUrl(rawInput); // استخراج الرابط من النص
-
-  if (!url) {
-    return res.status(400).json({ error: 'لم يتم العثور على رابط صالح في النص' });
+    return res.status(405).json({ error: 'Method not allowed' })
   }
 
   try {
-    const response = await fetch("https://api.cobalt.tools/api/json", {
+    const { messages, systemPrompt } = req.body
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        "HTTP-Referer": "https://botforge-9rbn.vercel.app",
+        "X-Title": "BotForge"
       },
       body: JSON.stringify({
-        url: url,
-        videoQuality: "720",
+        model: "google/gemini-2.0-flash-001",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages
+        ]
       })
-    });
+    })
 
-    const data = await response.json();
-    const directUrl = data.url || (data.picker && data.picker[0]?.url);
-
-    if (directUrl) {
-      return res.status(200).json({ 
-        success: true, 
-        downloadUrl: directUrl 
-      });
-    } else {
-      return res.status(400).json({ 
-        error: 'عذراً، هذا الرابط غير مدعوم حالياً' 
-      });
-    }
+    const data = await response.json()
+    return res.status(200).json(data)
   } catch (error) {
-    console.error('Download API Error:', error);
-    return res.status(500).json({ 
-      error: 'المحرك مشغول، حاول مرة أخرى' 
-    });
+    console.error('Chat error:', error)
+    return res.status(500).json({ error: 'حدث خطأ في المعالجة' })
   }
 }
